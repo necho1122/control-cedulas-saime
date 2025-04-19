@@ -1,16 +1,27 @@
-import { PrismaClient } from '@prisma/client';
+import { db } from '../../../firebaseConfig';
+import {
+	collection,
+	addDoc,
+	getDocs,
+	updateDoc,
+	deleteDoc,
+	doc,
+} from 'firebase/firestore';
 import { NextResponse } from 'next/server';
-
-const prisma = new PrismaClient();
 
 export async function GET() {
 	try {
-		const usuarios = await prisma.usuario.findMany();
+		const querySnapshot = await getDocs(collection(db, 'usuarios'));
+		const usuarios = querySnapshot.docs.map((doc) => ({
+			id: doc.id,
+			...doc.data(),
+		}));
+
 		return NextResponse.json(usuarios, { status: 200 });
 	} catch (error) {
-		console.error('Error al obtener usuarios:', error);
+		console.error('Error al obtener los usuarios:', error.message, error.stack);
 		return NextResponse.json(
-			{ error: 'Error interno del servidor' },
+			{ error: 'Error interno del servidor', details: error.message },
 			{ status: 500 }
 		);
 	}
@@ -28,15 +39,18 @@ export async function POST(request: Request) {
 			);
 		}
 
-		const nuevoUsuario = await prisma.usuario.create({
-			data: { email, password, rol },
+		// Crear un nuevo usuario en Firestore
+		const docRef = await addDoc(collection(db, 'usuarios'), {
+			email,
+			password,
+			rol,
 		});
 
-		return NextResponse.json(nuevoUsuario, { status: 201 });
+		return NextResponse.json({ id: docRef.id, email, rol }, { status: 201 });
 	} catch (error) {
-		console.error('Error al crear usuario:', error);
+		console.error('Error al crear el usuario:', error.message, error.stack);
 		return NextResponse.json(
-			{ error: 'Error interno del servidor' },
+			{ error: 'Error interno del servidor', details: error.message },
 			{ status: 500 }
 		);
 	}
@@ -54,16 +68,18 @@ export async function PATCH(request: Request) {
 			);
 		}
 
-		const usuarioActualizado = await prisma.usuario.update({
-			where: { id },
-			data: { email, password, rol },
-		});
+		const docRef = doc(db, 'usuarios', id);
+		await updateDoc(docRef, { email, password, rol });
 
-		return NextResponse.json(usuarioActualizado, { status: 200 });
+		return NextResponse.json({ id, email, rol }, { status: 200 });
 	} catch (error) {
-		console.error('Error al actualizar usuario:', error);
+		console.error(
+			'Error al actualizar el usuario:',
+			error.message,
+			error.stack
+		);
 		return NextResponse.json(
-			{ error: 'Error interno del servidor' },
+			{ error: 'Error interno del servidor', details: error.message },
 			{ status: 500 }
 		);
 	}
@@ -72,7 +88,7 @@ export async function PATCH(request: Request) {
 export async function DELETE(request: Request) {
 	try {
 		const { searchParams } = new URL(request.url);
-		const id = parseInt(searchParams.get('id') || '');
+		const id = searchParams.get('id');
 
 		if (!id) {
 			return NextResponse.json(
@@ -81,13 +97,14 @@ export async function DELETE(request: Request) {
 			);
 		}
 
-		await prisma.usuario.delete({ where: { id } });
+		const docRef = doc(db, 'usuarios', id);
+		await deleteDoc(docRef);
 
 		return NextResponse.json({ message: 'Usuario eliminado' }, { status: 200 });
 	} catch (error) {
-		console.error('Error al eliminar usuario:', error);
+		console.error('Error al eliminar el usuario:', error.message, error.stack);
 		return NextResponse.json(
-			{ error: 'Error interno del servidor' },
+			{ error: 'Error interno del servidor', details: error.message },
 			{ status: 500 }
 		);
 	}

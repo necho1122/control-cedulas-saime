@@ -113,7 +113,11 @@ export default function Home() {
 										{doc.estado}
 									</td>
 									<td className='border border-gray-300 px-4 py-2'>
-										{new Date(doc.fechaEmision).toLocaleDateString()}
+										{new Date(doc.fechaEmision).toLocaleDateString('es-ES', {
+											day: '2-digit',
+											month: '2-digit',
+											year: 'numeric',
+										})}
 									</td>
 								</tr>
 							))}

@@ -53,14 +53,9 @@ export default function Registro() {
 		return regex.test(fecha);
 	};
 
-	const formatFechaToISO = (fecha) => {
-		const [day, month, year] = fecha.split('/');
-		return `${year}-${month}-${day}`; // Convertir a formato ISO (yyyy-mm-dd)
-	};
-
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		setError(''); // Limpiar errores previos
+		setError('');
 
 		if (!isValidFecha(form.fechaEmision)) {
 			setError('La fecha debe estar en el formato dd/mm/yyyy');
@@ -68,15 +63,10 @@ export default function Registro() {
 		}
 
 		try {
-			const formattedForm = {
-				...form,
-				fechaEmision: formatFechaToISO(form.fechaEmision), // Convertir a formato ISO antes de enviar
-			};
-
 			const res = await fetch('/api/registro', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(formattedForm),
+				body: JSON.stringify(form),
 			});
 
 			if (res.ok) {
@@ -96,7 +86,7 @@ export default function Registro() {
 				setError(data.error || 'Error al registrar el documento');
 			}
 		} catch (err) {
-			setError('No se pudo conectar con el servidor. Verifica tu conexión.');
+			setError('No se pudo conectar con el servidor.');
 		}
 	};
 

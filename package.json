@@ -9,8 +9,11 @@
 		"prisma": "prisma"
 	},
 	"dependencies": {
+		"@firebase/auth": "^1.10.0",
+		"@firebase/firestore": "^4.7.10",
 		"@prisma/client": "^5.0.0",
 		"bcryptjs": "^3.0.2",
+		"firebase": "^11.6.0",
 		"next": "latest",
 		"next-auth": "^4.0.0",
 		"prisma": "^5.0.0",

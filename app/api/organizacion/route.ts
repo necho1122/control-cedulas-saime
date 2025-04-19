@@ -1,11 +1,22 @@
-import { PrismaClient } from '@prisma/client';
+import { db } from '../../../firebaseConfig';
+import {
+	collection,
+	getDocs,
+	addDoc,
+	updateDoc,
+	deleteDoc,
+	doc,
+} from 'firebase/firestore';
 import { NextResponse } from 'next/server';
-
-const prisma = new PrismaClient();
 
 export async function GET() {
 	try {
-		const organizacion = await prisma.organizacion.findMany();
+		const querySnapshot = await getDocs(collection(db, 'organizacion'));
+		const organizacion = querySnapshot.docs.map((doc) => ({
+			id: doc.id,
+			...doc.data(),
+		}));
+
 		return NextResponse.json(organizacion, { status: 200 });
 	} catch (error) {
 		console.error('Error al obtener la organización:', error);
@@ -28,11 +39,14 @@ export async function POST(request: Request) {
 			);
 		}
 
-		const nuevaOrganizacion = await prisma.organizacion.create({
-			data: { carpeta, archivador, posicion, descripcion },
+		const docRef = await addDoc(collection(db, 'organizacion'), {
+			carpeta,
+			archivador,
+			posicion,
+			descripcion,
 		});
 
-		return NextResponse.json(nuevaOrganizacion, { status: 201 });
+		return NextResponse.json({ id: docRef.id, ...body }, { status: 201 });
 	} catch (error) {
 		console.error('Error al crear la organización:', error);
 		return NextResponse.json(
@@ -54,12 +68,13 @@ export async function PATCH(request: Request) {
 			);
 		}
 
-		const organizacionActualizada = await prisma.organizacion.update({
-			where: { id },
-			data: { carpeta, archivador, posicion, descripcion },
-		});
+		const docRef = doc(db, 'organizacion', id);
+		await updateDoc(docRef, { carpeta, archivador, posicion, descripcion });
 
-		return NextResponse.json(organizacionActualizada, { status: 200 });
+		return NextResponse.json(
+			{ id, carpeta, archivador, posicion, descripcion },
+			{ status: 200 }
+		);
 	} catch (error) {
 		console.error('Error al actualizar la organización:', error);
 		return NextResponse.json(
@@ -72,7 +87,7 @@ export async function PATCH(request: Request) {
 export async function DELETE(request: Request) {
 	try {
 		const { searchParams } = new URL(request.url);
-		const id = parseInt(searchParams.get('id') || '');
+		const id = searchParams.get('id');
 
 		if (!id) {
 			return NextResponse.json(
@@ -81,7 +96,8 @@ export async function DELETE(request: Request) {
 			);
 		}
 
-		await prisma.organizacion.delete({ where: { id } });
+		const docRef = doc(db, 'organizacion', id);
+		await deleteDoc(docRef);
 
 		return NextResponse.json(
 			{ message: 'Elemento eliminado' },
