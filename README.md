@@ -25,23 +25,27 @@ Este proyecto es una aplicación interna desarrollada para el **SAIME de Venezue
 ## Configuración del Proyecto
 
 1. **Clonar el repositorio**:
+
    ```bash
    git clone https://github.com/necho1122/control-cedulas-saime.git
    cd control-cedulas-saime
    ```
 
 2. **Instalar dependencias**:
+
    ```bash
    npm install
    ```
 
 3. **Configurar variables de entorno**:
+
    - Crea un archivo `.env` en la raíz del proyecto con el siguiente contenido:
      ```
      DATABASE_URL=mysql://usuario:contraseña@host:puerto/nombre_base_datos
      ```
 
 4. **Configurar Prisma**:
+
    - Generar el cliente Prisma:
      ```bash
      npx prisma generate
@@ -52,6 +56,7 @@ Este proyecto es una aplicación interna desarrollada para el **SAIME de Venezue
      ```
 
 5. **Iniciar el servidor de desarrollo**:
+
    ```bash
    npm run dev
    ```
@@ -62,10 +67,12 @@ Este proyecto es una aplicación interna desarrollada para el **SAIME de Venezue
 ## Despliegue en Vercel
 
 1. **Conectar el repositorio**:
+
    - Sube el proyecto a un repositorio en GitHub, GitLab o Bitbucket.
    - Conecta el repositorio a Vercel.
 
 2. **Configurar variables de entorno**:
+
    - En el panel de Vercel, ve a **Settings > Environment Variables** y agrega:
      ```
      DATABASE_URL=mysql://usuario:contraseña@host:puerto/nombre_base_datos

@@ -5,10 +5,10 @@ const prisma = new PrismaClient();
 
 export async function GET() {
 	try {
-		const usuarios = await prisma.usuario.findMany();
-		return NextResponse.json(usuarios, { status: 200 });
+		const organizacion = await prisma.organizacion.findMany();
+		return NextResponse.json(organizacion, { status: 200 });
 	} catch (error) {
-		console.error('Error al obtener usuarios:', error);
+		console.error('Error al obtener la organización:', error);
 		return NextResponse.json(
 			{ error: 'Error interno del servidor' },
 			{ status: 500 }
@@ -19,22 +19,22 @@ export async function GET() {
 export async function POST(request: Request) {
 	try {
 		const body = await request.json();
-		const { email, password, rol } = body;
+		const { carpeta, archivador, posicion, descripcion } = body;
 
-		if (!email || !password || !rol) {
+		if (!carpeta || !archivador || !posicion || !descripcion) {
 			return NextResponse.json(
 				{ error: 'Todos los campos son obligatorios' },
 				{ status: 400 }
 			);
 		}
 
-		const nuevoUsuario = await prisma.usuario.create({
-			data: { email, password, rol },
+		const nuevaOrganizacion = await prisma.organizacion.create({
+			data: { carpeta, archivador, posicion, descripcion },
 		});
 
-		return NextResponse.json(nuevoUsuario, { status: 201 });
+		return NextResponse.json(nuevaOrganizacion, { status: 201 });
 	} catch (error) {
-		console.error('Error al crear usuario:', error);
+		console.error('Error al crear la organización:', error);
 		return NextResponse.json(
 			{ error: 'Error interno del servidor' },
 			{ status: 500 }
@@ -45,23 +45,23 @@ export async function POST(request: Request) {
 export async function PATCH(request: Request) {
 	try {
 		const body = await request.json();
-		const { id, email, password, rol } = body;
+		const { id, carpeta, archivador, posicion, descripcion } = body;
 
-		if (!id || !email || !password || !rol) {
+		if (!id || !carpeta || !archivador || !posicion || !descripcion) {
 			return NextResponse.json(
 				{ error: 'Todos los campos son obligatorios' },
 				{ status: 400 }
 			);
 		}
 
-		const usuarioActualizado = await prisma.usuario.update({
+		const organizacionActualizada = await prisma.organizacion.update({
 			where: { id },
-			data: { email, password, rol },
+			data: { carpeta, archivador, posicion, descripcion },
 		});
 
-		return NextResponse.json(usuarioActualizado, { status: 200 });
+		return NextResponse.json(organizacionActualizada, { status: 200 });
 	} catch (error) {
-		console.error('Error al actualizar usuario:', error);
+		console.error('Error al actualizar la organización:', error);
 		return NextResponse.json(
 			{ error: 'Error interno del servidor' },
 			{ status: 500 }
@@ -81,11 +81,14 @@ export async function DELETE(request: Request) {
 			);
 		}
 
-		await prisma.usuario.delete({ where: { id } });
+		await prisma.organizacion.delete({ where: { id } });
 
-		return NextResponse.json({ message: 'Usuario eliminado' }, { status: 200 });
+		return NextResponse.json(
+			{ message: 'Elemento eliminado' },
+			{ status: 200 }
+		);
 	} catch (error) {
-		console.error('Error al eliminar usuario:', error);
+		console.error('Error al eliminar la organización:', error);
 		return NextResponse.json(
 			{ error: 'Error interno del servidor' },
 			{ status: 500 }

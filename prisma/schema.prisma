@@ -34,3 +34,12 @@ model Usuario {
   password String
   rol      String
 }
+
+model Organizacion {
+  id          Int      @id @default(autoincrement())
+  carpeta     String
+  archivador  String
+  posicion    String
+  descripcion String
+}
+npx prisma migrate dev --name <nombre_de_la_migracion>

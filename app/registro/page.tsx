@@ -73,7 +73,7 @@ export default function Registro() {
 				fechaEmision: formatFechaToISO(form.fechaEmision), // Convertir a formato ISO antes de enviar
 			};
 
-			const res = await fetch('/api/documentos', {
+			const res = await fetch('/api/registro', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify(formattedForm),
