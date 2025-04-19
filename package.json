@@ -6,8 +6,7 @@
 		"dev": "next dev",
 		"build": "next build",
 		"start": "next start",
-		"prisma": "prisma",
-		"postinstall": "npm install --legacy-peer-deps"
+		"prisma": "prisma"
 	},
 	"dependencies": {
 		"@firebase/auth": "^0.23.2",
