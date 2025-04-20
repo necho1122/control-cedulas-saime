@@ -18,7 +18,7 @@ export default function RootLayout({
 				<div className='flex h-screen'>
 					<aside className='w-64 bg-gray-800 text-white p-4'>
 						<Image
-							src='/saime-seeklogo.png' // Ruta relativa desde la carpeta public
+							src='https://i.imgur.com/eFdWg1H_d.webp?maxwidth=760&fidelity=grand' // Ruta relativa desde la carpeta public
 							alt='Logo del proyecto'
 							width={150} // Especificar ancho
 							height={150} // Especificar alto
