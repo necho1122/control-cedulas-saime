@@ -25,6 +25,7 @@
 	"devDependencies": {
 		"@types/react": "^19.1.2",
 		"autoprefixer": "^10.4.21",
+		"bcrypt": "^5.1.1",
 		"postcss": "^8.5.3",
 		"typescript": "^5.8.3"
 	}

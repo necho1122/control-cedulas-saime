@@ -1,7 +1,7 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
@@ -18,13 +18,20 @@ export default NextAuth({
 					where: { email: credentials?.email },
 				});
 
-				if (
-					user &&
-					bcrypt.compareSync(credentials?.password || '', user.password)
-				) {
-					return { id: user.id.toString(), email: user.email, rol: user.rol }; // Convertir id a string
+				if (!user) {
+					throw new Error('No se encontró un usuario con ese correo.');
 				}
-				return null;
+
+				const isValidPassword = await bcrypt.compare(
+					credentials?.password || '',
+					user.password
+				);
+
+				if (!isValidPassword) {
+					throw new Error('Contraseña incorrecta.');
+				}
+
+				return { id: user.id.toString(), email: user.email, rol: user.rol };
 			},
 		}),
 	],
