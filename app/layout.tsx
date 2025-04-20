@@ -1,5 +1,6 @@
 import './globals.css';
 import Link from 'next/link';
+import Image from 'next/image'; // Importar el componente Image
 
 export const metadata = {
 	title: 'Sistema de Gestión de Cédulas',
@@ -16,10 +17,12 @@ export default function RootLayout({
 			<body>
 				<div className='flex h-screen'>
 					<aside className='w-64 bg-gray-800 text-white p-4'>
-						<img
-							src='/saime-seeklogo.png'
+						<Image
+							src='/saime-seeklogo.png' // Ruta relativa desde la carpeta public
 							alt='Logo del proyecto'
-							style={{ width: '150px', marginBottom: '20px' }}
+							width={150} // Especificar ancho
+							height={150} // Especificar alto
+							style={{ marginBottom: '20px' }} // Estilo adicional
 						/>
 						<nav>
 							<ul className='space-y-4'>
