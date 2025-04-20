@@ -2,9 +2,11 @@ import { db } from '../../../firebaseConfig';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic'; // Marcar el endpoint como dinámico
+
 export async function GET(request: Request) {
 	try {
-		const { searchParams } = new URL(request.url);
+		const { searchParams } = new URL(request.url); // Usar URL para obtener los parámetros de consulta
 		const queryParam = searchParams.get('query') || '';
 		const filter = searchParams.get('filter') || '';
 
@@ -38,8 +40,14 @@ export async function GET(request: Request) {
 			]);
 
 			const documentos = [
-				...nombreSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })),
-				...cedulaSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })),
+				...nombreSnapshot.docs.map((doc) => ({
+					id: doc.id,
+					...(doc.data() as Record<string, any>),
+				})),
+				...cedulaSnapshot.docs.map((doc) => ({
+					id: doc.id,
+					...(doc.data() as Record<string, any>),
+				})),
 			];
 
 			return NextResponse.json(documentos, { status: 200 });
@@ -53,7 +61,7 @@ export async function GET(request: Request) {
 		const querySnapshot = await getDocs(q);
 		const documentos = querySnapshot.docs.map((doc) => ({
 			id: doc.id,
-			...doc.data(),
+			...(doc.data() as Record<string, any>),
 		}));
 
 		return NextResponse.json(documentos, { status: 200 });

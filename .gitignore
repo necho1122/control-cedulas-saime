@@ -44,3 +44,4 @@ prisma/migrations/
 
 # Ignore public sensitive files
 public/saime-seeklogo.png
+.vercel
