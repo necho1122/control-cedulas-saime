@@ -67,7 +67,7 @@ export default function Home() {
 					className='border p-2'
 				>
 					<option value=''>Todos</option>
-					<option value='Primera vez'>Primera vez</option>
+					<option value='Original'>Original</option>
 					<option value='Renovación'>Renovación</option>
 				</select>
 				<button

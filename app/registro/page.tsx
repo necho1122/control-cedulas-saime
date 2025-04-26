@@ -6,7 +6,7 @@ export default function Registro() {
 	const [form, setForm] = useState({
 		nombre: '',
 		cedula: '',
-		tipoTramite: 'Primera vez',
+		tipoTramite: 'Original',
 		fechaEmision: '',
 		estado: 'Disponible',
 		carpeta: '',
@@ -74,7 +74,7 @@ export default function Registro() {
 				setForm({
 					nombre: '',
 					cedula: '',
-					tipoTramite: 'Primera vez',
+					tipoTramite: 'Original',
 					fechaEmision: '',
 					estado: 'Disponible',
 					carpeta: '',
@@ -120,7 +120,7 @@ export default function Registro() {
 					onChange={(e) => setForm({ ...form, tipoTramite: e.target.value })}
 					className='border p-2 w-full'
 				>
-					<option value='Primera vez'>Primera vez</option>
+					<option value='Original'>Original</option>
 					<option value='Renovación'>Renovación</option>
 				</select>
 				<input
@@ -137,9 +137,7 @@ export default function Registro() {
 				>
 					<option value='Disponible'>Disponible</option>
 					<option value='Entregado'>Entregado</option>
-					<option value='Extraviado'>Extraviado</option>
-					<option value='Desincorporado'>Desincorporado</option>{' '}
-					{/* Nuevo estado */}
+					<option value='Desincorporado'>Desincorporado</option>
 				</select>
 				<input
 					type='text'
