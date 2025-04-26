@@ -7,8 +7,10 @@ export default function Home() {
 	const [search, setSearch] = useState('');
 	const [filter, setFilter] = useState('');
 	const [error, setError] = useState('');
+	const [isLoading, setIsLoading] = useState(false); // Estado para controlar el indicador de carga
 
 	const fetchDocumentos = async (query = '', filter = '') => {
+		setIsLoading(true); // Inicia el estado de carga
 		try {
 			const res = await fetch(
 				`/api/documentos?query=${encodeURIComponent(
@@ -23,6 +25,8 @@ export default function Home() {
 			setError('');
 		} catch (err: any) {
 			setError(err.message);
+		} finally {
+			setIsLoading(false); // Finaliza el estado de carga
 		}
 	};
 
@@ -73,60 +77,61 @@ export default function Home() {
 					Buscar
 				</button>
 			</div>
-			{error && <p className='text-red-500 mb-4'>{error}</p>}
-			<div>
-				{documentos.length > 0 ? (
-					<table className='table-auto w-full border-collapse border border-gray-300'>
-						<thead>
-							<tr className='bg-gray-200'>
-								<th className='border border-gray-300 px-4 py-2'>Nombre</th>
-								<th className='border border-gray-300 px-4 py-2'>Cédula</th>
-								<th className='border border-gray-300 px-4 py-2'>
-									Tipo de Trámite
-								</th>
-								<th className='border border-gray-300 px-4 py-2'>Ubicación</th>
-								<th className='border border-gray-300 px-4 py-2'>Estado</th>
-								<th className='border border-gray-300 px-4 py-2'>
-									Fecha de Emisión
-								</th>
+			{isLoading ? ( // Mostrar indicador de carga mientras se obtienen los datos
+				<p className='text-blue-500'>Cargando datos...</p>
+			) : error ? (
+				<p className='text-red-500 mb-4'>{error}</p>
+			) : documentos.length > 0 ? (
+				<table className='table-auto w-full border-collapse border border-gray-300'>
+					<thead>
+						<tr className='bg-gray-200'>
+							<th className='border border-gray-300 px-4 py-2'>Nombre</th>
+							<th className='border border-gray-300 px-4 py-2'>Cédula</th>
+							<th className='border border-gray-300 px-4 py-2'>
+								Tipo de Trámite
+							</th>
+							<th className='border border-gray-300 px-4 py-2'>Ubicación</th>
+							<th className='border border-gray-300 px-4 py-2'>Estado</th>
+							<th className='border border-gray-300 px-4 py-2'>
+								Fecha de Emisión
+							</th>
+						</tr>
+					</thead>
+					<tbody>
+						{documentos.map((doc: any) => (
+							<tr
+								key={doc.id}
+								className='text-center'
+							>
+								<td className='border border-gray-300 px-4 py-2'>
+									{doc.nombre}
+								</td>
+								<td className='border border-gray-300 px-4 py-2'>
+									{doc.cedula}
+								</td>
+								<td className='border border-gray-300 px-4 py-2'>
+									{doc.tipoTramite}
+								</td>
+								<td className='border border-gray-300 px-4 py-2'>
+									{doc.carpeta}, {doc.archivador}, {doc.posicion}
+								</td>
+								<td className='border border-gray-300 px-4 py-2'>
+									{doc.estado}
+								</td>
+								<td className='border border-gray-300 px-4 py-2'>
+									{new Date(doc.fechaEmision).toLocaleDateString('es-ES', {
+										day: '2-digit',
+										month: '2-digit',
+										year: 'numeric',
+									})}
+								</td>
 							</tr>
-						</thead>
-						<tbody>
-							{documentos.map((doc: any) => (
-								<tr
-									key={doc.id}
-									className='text-center'
-								>
-									<td className='border border-gray-300 px-4 py-2'>
-										{doc.nombre}
-									</td>
-									<td className='border border-gray-300 px-4 py-2'>
-										{doc.cedula}
-									</td>
-									<td className='border border-gray-300 px-4 py-2'>
-										{doc.tipoTramite}
-									</td>
-									<td className='border border-gray-300 px-4 py-2'>
-										{doc.carpeta}, {doc.archivador}, {doc.posicion}
-									</td>
-									<td className='border border-gray-300 px-4 py-2'>
-										{doc.estado}
-									</td>
-									<td className='border border-gray-300 px-4 py-2'>
-										{new Date(doc.fechaEmision).toLocaleDateString('es-ES', {
-											day: '2-digit',
-											month: '2-digit',
-											year: 'numeric',
-										})}
-									</td>
-								</tr>
-							))}
-						</tbody>
-					</table>
-				) : (
-					<p>No hay documentos registrados.</p>
-				)}
-			</div>
+						))}
+					</tbody>
+				</table>
+			) : (
+				<p>No hay documentos registrados.</p>
+			)}
 		</div>
 	);
 }

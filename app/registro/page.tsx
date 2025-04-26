@@ -109,7 +109,10 @@ export default function Registro() {
 					type='text'
 					placeholder='Número de cédula'
 					value={form.cedula}
-					onChange={(e) => setForm({ ...form, cedula: e.target.value })}
+					onChange={(e) => {
+						const value = e.target.value.replace(/[^0-9]/g, ''); // Permitir solo números
+						setForm({ ...form, cedula: value });
+					}}
 					className='border p-2 w-full'
 				/>
 				<select
@@ -135,6 +138,8 @@ export default function Registro() {
 					<option value='Disponible'>Disponible</option>
 					<option value='Entregado'>Entregado</option>
 					<option value='Extraviado'>Extraviado</option>
+					<option value='Desincorporado'>Desincorporado</option>{' '}
+					{/* Nuevo estado */}
 				</select>
 				<input
 					type='text'
