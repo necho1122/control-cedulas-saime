@@ -42,6 +42,7 @@ export default function RootLayout({
 										Registro de Documentos
 									</Link>
 								</li>
+								{/*
 								<li>
 									<Link
 										href='/organizacion'
@@ -50,6 +51,7 @@ export default function RootLayout({
 										Organización
 									</Link>
 								</li>
+								*/}
 								<li>
 									<Link
 										href='/administracion'

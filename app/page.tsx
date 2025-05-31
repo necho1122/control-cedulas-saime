@@ -90,7 +90,7 @@ export default function Home() {
 							<th className='border border-gray-300 px-4 py-2'>
 								Tipo de Trámite
 							</th>
-							<th className='border border-gray-300 px-4 py-2'>Ubicación</th>
+							{/* <th className='border border-gray-300 px-4 py-2'>Ubicación</th> */}
 							<th className='border border-gray-300 px-4 py-2'>Estado</th>
 							<th className='border border-gray-300 px-4 py-2'>
 								Fecha de Emisión
@@ -112,9 +112,11 @@ export default function Home() {
 								<td className='border border-gray-300 px-4 py-2'>
 									{doc.tipoTramite}
 								</td>
+								{/*
 								<td className='border border-gray-300 px-4 py-2'>
 									{doc.carpeta}, {doc.archivador}, {doc.posicion}
 								</td>
+								*/}
 								<td className='border border-gray-300 px-4 py-2'>
 									{doc.estado}
 								</td>
