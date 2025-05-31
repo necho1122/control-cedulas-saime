@@ -9,9 +9,6 @@ export default function Registro() {
 		tipoTramite: 'Original',
 		fechaEmision: '',
 		estado: 'Disponible',
-		carpeta: '',
-		archivador: '',
-		posicion: '',
 	});
 	const [error, setError] = useState('');
 
@@ -77,9 +74,6 @@ export default function Registro() {
 					tipoTramite: 'Original',
 					fechaEmision: '',
 					estado: 'Disponible',
-					carpeta: '',
-					archivador: '',
-					posicion: '',
 				});
 			} else {
 				const data = await res.json();
@@ -139,7 +133,7 @@ export default function Registro() {
 					<option value='Entregado'>Entregado</option>
 					<option value='Desincorporado'>Desincorporado</option>
 				</select>
-				<input
+				{/* <input
 					type='text'
 					placeholder='Carpeta'
 					value={form.carpeta}
@@ -159,7 +153,7 @@ export default function Registro() {
 					value={form.posicion}
 					onChange={(e) => setForm({ ...form, posicion: e.target.value })}
 					className='border p-2 w-full'
-				/>
+				/>*/}
 				<button
 					type='submit'
 					className='bg-blue-500 text-white px-4 py-2'

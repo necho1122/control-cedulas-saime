@@ -6,28 +6,9 @@ export async function POST(request: Request) {
 	try {
 		const body = await request.json();
 
-		// Validar los campos requeridos
-		const {
-			nombre,
-			cedula,
-			tipoTramite,
-			fechaEmision,
-			estado,
-			carpeta,
-			archivador,
-			posicion,
-		} = body;
+		const { nombre, cedula, tipoTramite, fechaEmision, estado } = body;
 
-		if (
-			!nombre ||
-			!cedula ||
-			!tipoTramite ||
-			!fechaEmision ||
-			!estado ||
-			!carpeta ||
-			!archivador ||
-			!posicion
-		) {
+		if (!nombre || !cedula || !tipoTramite || !fechaEmision || !estado) {
 			return NextResponse.json(
 				{ error: 'Todos los campos son obligatorios' },
 				{ status: 400 }
@@ -60,9 +41,6 @@ export async function POST(request: Request) {
 			tipoTramite,
 			fechaEmision: fecha.toISOString(),
 			estado,
-			carpeta,
-			archivador,
-			posicion,
 		});
 
 		return NextResponse.json({ id: docRef.id, ...body }, { status: 201 });
