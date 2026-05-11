@@ -1,0 +1,146 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function hasRole(role) {
+      return isSignedIn() && request.auth.token.role == role;
+    }
+
+    function isAdmin() {
+      return hasRole('Admin') || (isSignedIn() && request.auth.token.admin == true);
+    }
+
+    function isOperator() {
+      // Lectura operativa para cualquier usuario autenticado.
+      // Los permisos de escritura sensibles siguen restringidos por isAdmin().
+      return isSignedIn();
+    }
+
+    function isValidEstado(estado) {
+      return estado in ['Disponible', 'Entregado', 'Desincorporado'];
+    }
+
+    function isValidTramite(tramite) {
+      return tramite in ['Original', 'Renovación'];
+    }
+
+    function isValidCedula(cedula) {
+      return cedula is string && cedula.matches('^[0-9]{6,10}$');
+    }
+
+    function isISODateString(value) {
+      return value is string
+        && value.matches('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$');
+    }
+
+    function isValidColor(value) {
+      return value is string && value.matches('^#[0-9A-Fa-f]{6}$');
+    }
+
+    match /documentos/{docId} {
+      allow get, list: if isOperator();
+
+      allow create: if isAdmin()
+        && request.resource.data.keys().hasAll([
+          'nombre',
+          'cedula',
+          'tipoTramite',
+          'fechaEmision',
+          'estado',
+          'createdAt',
+          'updatedAt',
+          'createdBy'
+        ])
+        && request.resource.data.nombre is string
+        && request.resource.data.nombre.size() >= 3
+        && request.resource.data.nombre.size() <= 120
+        && isValidCedula(request.resource.data.cedula)
+        && isValidTramite(request.resource.data.tipoTramite)
+        && isValidEstado(request.resource.data.estado)
+        && isISODateString(request.resource.data.fechaEmision)
+        && isISODateString(request.resource.data.createdAt)
+        && isISODateString(request.resource.data.updatedAt)
+        && request.resource.data.createdBy is string;
+
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).changedKeys().hasOnly([
+          'estado',
+          'updatedAt'
+        ])
+        && isValidEstado(request.resource.data.estado)
+        && isISODateString(request.resource.data.updatedAt);
+
+      allow delete: if isAdmin();
+    }
+
+    match /usuarios/{userId} {
+      allow get, list: if isAdmin();
+
+      allow create: if isAdmin()
+        && request.resource.data.keys().hasAll([
+          'email',
+          'passwordHash',
+          'password',
+          'rol',
+          'createdAt',
+          'updatedAt'
+        ])
+        && request.resource.data.email is string
+        && request.resource.data.email.matches('^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$')
+        && request.resource.data.passwordHash is string
+        && request.resource.data.rol in ['Admin', 'Usuario']
+        && request.resource.data.password == null
+        && isISODateString(request.resource.data.createdAt)
+        && isISODateString(request.resource.data.updatedAt);
+
+      allow update: if isAdmin()
+        && request.resource.data.email is string
+        && request.resource.data.email.matches('^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$')
+        && request.resource.data.rol in ['Admin', 'Usuario']
+        && isISODateString(request.resource.data.updatedAt);
+
+      allow delete: if isAdmin();
+    }
+
+    match /organizacion/{orgId} {
+      allow get, list: if isOperator();
+
+      allow create, update: if isAdmin()
+        && request.resource.data.carpeta is string
+        && request.resource.data.archivador is string
+        && request.resource.data.posicion is string
+        && request.resource.data.descripcion is string
+        && request.resource.data.carpeta.size() > 0
+        && request.resource.data.archivador.size() > 0
+        && request.resource.data.posicion.size() > 0
+        && request.resource.data.descripcion.size() > 0
+        && request.resource.data.descripcion.size() <= 500;
+
+      allow delete: if isAdmin();
+    }
+
+    match /configuracion/{configId} {
+      allow get, list: if isOperator();
+
+      allow create, update: if isAdmin()
+        && request.resource.data.idioma in ['es', 'en']
+        && request.resource.data.zonaHoraria is string
+        && request.resource.data.formatoFecha in ['dd/mm/yyyy', 'mm/dd/yyyy']
+        && request.resource.data.nombreSistema is string
+        && request.resource.data.nombreSistema.size() > 0
+        && request.resource.data.nombreSistema.size() <= 120
+        && isValidColor(request.resource.data.colorPrimario)
+        && request.resource.data.logo is string
+        && isISODateString(request.resource.data.updatedAt);
+
+      allow delete: if isAdmin();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -6,7 +6,8 @@
 		"dev": "next dev",
 		"build": "next build",
 		"start": "next start",
-		"prisma": "prisma"
+		"prisma": "prisma",
+		"set:firebase-role": "node scripts/set-firebase-role.mjs"
 	},
 	"dependencies": {
 		"@firebase/auth": "^0.23.2",
@@ -14,6 +15,7 @@
 		"@prisma/client": "^5.0.0",
 		"bcryptjs": "^3.0.2",
 		"firebase": "^9.23.0",
+		"firebase-admin": "^13.9.0",
 		"next": "^13.5.0",
 		"next-auth": "^4.0.0",
 		"prisma": "^5.0.0",

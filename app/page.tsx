@@ -2,29 +2,44 @@
 
 import { useEffect, useState } from 'react';
 
+type Documento = {
+	id: string;
+	nombre: string;
+	cedula: string;
+	tipoTramite: 'Original' | 'Renovación';
+	estado: 'Disponible' | 'Entregado' | 'Desincorporado';
+	fechaEmision: string;
+};
+
 export default function Home() {
-	const [documentos, setDocumentos] = useState([]);
+	const [documentos, setDocumentos] = useState<Documento[]>([]);
 	const [search, setSearch] = useState('');
 	const [filter, setFilter] = useState('');
 	const [error, setError] = useState('');
 	const [isLoading, setIsLoading] = useState(false); // Estado para controlar el indicador de carga
+	const [hasSearched, setHasSearched] = useState(false);
 
 	const fetchDocumentos = async (query = '', filter = '') => {
 		setIsLoading(true); // Inicia el estado de carga
 		try {
 			const res = await fetch(
 				`/api/documentos?query=${encodeURIComponent(
-					query.trim()
-				)}&filter=${encodeURIComponent(filter)}`
+					query.trim(),
+				)}&filter=${encodeURIComponent(filter)}&pageSize=100`,
 			);
 			if (!res.ok) {
-				throw new Error('Error al obtener la lista de documentos');
+				const payload = await res.json().catch(() => ({}));
+				throw new Error(
+					payload.details ||
+						payload.error ||
+						'Error al obtener la lista de documentos',
+				);
 			}
 			const data = await res.json();
 			setDocumentos(data);
 			setError('');
-		} catch (err: any) {
-			setError(err.message);
+		} catch (err: unknown) {
+			setError(err instanceof Error ? err.message : 'Error inesperado');
 		} finally {
 			setIsLoading(false); // Finaliza el estado de carga
 		}
@@ -35,30 +50,45 @@ export default function Home() {
 	}, []);
 
 	useEffect(() => {
+		setHasSearched(true);
 		fetchDocumentos(search, filter);
 	}, [filter]);
 
 	const handleSearch = () => {
 		if (search.trim() || filter) {
 			setError('');
+			setHasSearched(true);
 			fetchDocumentos(search, filter);
-			setSearch(''); // Limpiar el input después de la búsqueda
 		} else {
 			setError(
-				'Por favor, ingresa un término de búsqueda válido o selecciona un filtro.'
+				'Por favor, ingresa un término de búsqueda válido o selecciona un filtro.',
 			);
 		}
+	};
+
+	const handleClear = () => {
+		setSearch('');
+		setFilter('');
+		setHasSearched(false);
+		setError('');
+		fetchDocumentos('', '');
 	};
 
 	return (
 		<div className='p-6'>
 			<h1 className='text-2xl font-bold mb-4'>Documentos Registrados</h1>
-			<div className='flex gap-2 mb-4'>
+			<div className='flex flex-col md:flex-row gap-2 mb-4'>
 				<input
 					type='text'
 					placeholder='Buscar por nombre o cédula'
 					value={search}
 					onChange={(e) => setSearch(e.target.value)}
+					onKeyDown={(e) => {
+						if (e.key === 'Enter') {
+							e.preventDefault();
+							handleSearch();
+						}
+					}}
 					className='border p-2 flex-1'
 				/>
 				<select
@@ -76,7 +106,16 @@ export default function Home() {
 				>
 					Buscar
 				</button>
+				<button
+					onClick={handleClear}
+					className='bg-gray-500 text-white px-4 py-2'
+				>
+					Limpiar
+				</button>
 			</div>
+			<p className='text-sm text-gray-600 mb-3'>
+				Mostrando {documentos.length} resultados.
+			</p>
 			{isLoading ? ( // Mostrar indicador de carga mientras se obtienen los datos
 				<p className='text-blue-500'>Cargando datos...</p>
 			) : error ? (
@@ -98,7 +137,7 @@ export default function Home() {
 						</tr>
 					</thead>
 					<tbody>
-						{documentos.map((doc: any) => (
+						{documentos.map((doc) => (
 							<tr
 								key={doc.id}
 								className='text-center'
@@ -132,7 +171,11 @@ export default function Home() {
 					</tbody>
 				</table>
 			) : (
-				<p>No hay documentos registrados.</p>
+				<p>
+					{hasSearched
+						? 'No se encontraron documentos con los filtros aplicados.'
+						: 'No hay documentos registrados.'}
+				</p>
 			)}
 		</div>
 	);

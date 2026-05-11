@@ -2,9 +2,25 @@
 
 import { useEffect, useState } from 'react';
 
+type OrganizacionItem = {
+	id: string;
+	carpeta: string;
+	archivador: string;
+	posicion: string;
+	descripcion: string;
+};
+
+type OrganizacionForm = {
+	id: string | null;
+	carpeta: string;
+	archivador: string;
+	posicion: string;
+	descripcion: string;
+};
+
 export default function Organizacion() {
-	const [organizacion, setOrganizacion] = useState([]);
-	const [form, setForm] = useState({
+	const [organizacion, setOrganizacion] = useState<OrganizacionItem[]>([]);
+	const [form, setForm] = useState<OrganizacionForm>({
 		id: null,
 		carpeta: '',
 		archivador: '',
@@ -12,6 +28,7 @@ export default function Organizacion() {
 		descripcion: '',
 	});
 	const [error, setError] = useState('');
+	const [success, setSuccess] = useState('');
 
 	const fetchOrganizacion = async () => {
 		try {
@@ -19,6 +36,7 @@ export default function Organizacion() {
 			if (!res.ok) throw new Error('Error al obtener la organización');
 			const data = await res.json();
 			setOrganizacion(data);
+			setError('');
 		} catch (err: any) {
 			setError(err.message);
 		}
@@ -27,6 +45,7 @@ export default function Organizacion() {
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		setError('');
+		setSuccess('');
 
 		try {
 			const method = form.id ? 'PATCH' : 'POST';
@@ -44,17 +63,18 @@ export default function Organizacion() {
 				posicion: '',
 				descripcion: '',
 			});
+			setSuccess(form.id ? 'Registro actualizado.' : 'Registro agregado.');
 			fetchOrganizacion();
 		} catch (err: any) {
 			setError(err.message);
 		}
 	};
 
-	const handleEdit = (item) => {
+	const handleEdit = (item: OrganizacionItem) => {
 		setForm(item);
 	};
 
-	const handleDelete = async (id) => {
+	const handleDelete = async (id: string) => {
 		if (!confirm('¿Estás seguro de que deseas eliminar este elemento?')) return;
 
 		try {
@@ -62,6 +82,7 @@ export default function Organizacion() {
 				method: 'DELETE',
 			});
 			if (!res.ok) throw new Error('Error al eliminar el elemento');
+			setSuccess('Elemento eliminado.');
 			fetchOrganizacion();
 		} catch (err: any) {
 			setError(err.message);
@@ -79,6 +100,7 @@ export default function Organizacion() {
 					Organización de Documentos
 				</h1>
 				{error && <p className='text-red-500 mb-4'>{error}</p>}
+				{success && <p className='text-green-600 mb-4'>{success}</p>}
 				<form
 					onSubmit={handleSubmit}
 					className='mb-8 space-y-4'
@@ -139,7 +161,7 @@ export default function Organizacion() {
 						</tr>
 					</thead>
 					<tbody>
-						{organizacion.map((item) => (
+						{organizacion.map((item: OrganizacionItem) => (
 							<tr key={item.id}>
 								<td className='border border-gray-300 px-4 py-2'>
 									{item.carpeta}

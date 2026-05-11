@@ -1,9 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { ChangeEvent, FormEvent, useState } from 'react';
+
+type FormState = {
+	nombre: string;
+	cedula: string;
+	tipoTramite: 'Original' | 'Renovación';
+	fechaEmision: string;
+	estado: 'Disponible' | 'Entregado' | 'Desincorporado';
+};
 
 export default function Registro() {
-	const [form, setForm] = useState({
+	const [form, setForm] = useState<FormState>({
 		nombre: '',
 		cedula: '',
 		tipoTramite: 'Original',
@@ -11,8 +19,10 @@ export default function Registro() {
 		estado: 'Disponible',
 	});
 	const [error, setError] = useState('');
+	const [success, setSuccess] = useState('');
+	const [isSubmitting, setIsSubmitting] = useState(false);
 
-	const handleFechaChange = (e) => {
+	const handleFechaChange = (e: ChangeEvent<HTMLInputElement>) => {
 		let value = e.target.value;
 
 		// Eliminar cualquier carácter que no sea un número
@@ -45,14 +55,15 @@ export default function Registro() {
 		setForm({ ...form, fechaEmision: value });
 	};
 
-	const isValidFecha = (fecha) => {
+	const isValidFecha = (fecha: string) => {
 		const regex = /^\d{2}\/\d{2}\/\d{4}$/; // Validar formato dd/mm/yyyy
 		return regex.test(fecha);
 	};
 
-	const handleSubmit = async (e) => {
+	const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		setError('');
+		setSuccess('');
 
 		if (!isValidFecha(form.fechaEmision)) {
 			setError('La fecha debe estar en el formato dd/mm/yyyy');
@@ -60,6 +71,7 @@ export default function Registro() {
 		}
 
 		try {
+			setIsSubmitting(true);
 			const res = await fetch('/api/registro', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
@@ -67,7 +79,7 @@ export default function Registro() {
 			});
 
 			if (res.ok) {
-				alert('Documento registrado con éxito');
+				setSuccess('Documento registrado con éxito.');
 				setForm({
 					nombre: '',
 					cedula: '',
@@ -81,6 +93,8 @@ export default function Registro() {
 			}
 		} catch (err) {
 			setError('No se pudo conectar con el servidor.');
+		} finally {
+			setIsSubmitting(false);
 		}
 	};
 
@@ -88,6 +102,7 @@ export default function Registro() {
 		<div>
 			<h1 className='text-2xl font-bold mb-4'>Registro de Documentos</h1>
 			{error && <p className='text-red-500 mb-4'>{error}</p>}
+			{success && <p className='text-green-600 mb-4'>{success}</p>}
 			<form
 				onSubmit={handleSubmit}
 				className='space-y-4'
@@ -111,7 +126,12 @@ export default function Registro() {
 				/>
 				<select
 					value={form.tipoTramite}
-					onChange={(e) => setForm({ ...form, tipoTramite: e.target.value })}
+					onChange={(e) =>
+						setForm({
+							...form,
+							tipoTramite: e.target.value as 'Original' | 'Renovación',
+						})
+					}
 					className='border p-2 w-full'
 				>
 					<option value='Original'>Original</option>
@@ -126,7 +146,15 @@ export default function Registro() {
 				/>
 				<select
 					value={form.estado}
-					onChange={(e) => setForm({ ...form, estado: e.target.value })}
+					onChange={(e) =>
+						setForm({
+							...form,
+							estado: e.target.value as
+								| 'Disponible'
+								| 'Entregado'
+								| 'Desincorporado',
+						})
+					}
 					className='border p-2 w-full'
 				>
 					<option value='Disponible'>Disponible</option>
@@ -156,9 +184,10 @@ export default function Registro() {
 				/>*/}
 				<button
 					type='submit'
-					className='bg-blue-500 text-white px-4 py-2'
+					disabled={isSubmitting}
+					className='bg-blue-500 text-white px-4 py-2 disabled:opacity-60'
 				>
-					Registrar
+					{isSubmitting ? 'Guardando...' : 'Registrar'}
 				</button>
 			</form>
 		</div>

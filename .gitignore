@@ -8,6 +8,10 @@ yarn-error.log*
 .env
 .env.local
 .env.*.local
+.env.development
+.env.production
+.env.test
+.envrc
 
 # Logs
 logs/
@@ -37,10 +41,19 @@ prisma/migrations/
 
 # Miscellaneous
 *.local
-*.lock
 *.pid
 *.seed
 *.key
+*.pem
+*.p12
+*.pfx
+
+# Service account / credentials files
+service-account*.json
+*serviceAccount*.json
+firebase-adminsdk*.json
+gcp-credentials*.json
+google-credentials*.json
 
 # Ignore public sensitive files
 public/saime-seeklogo.png

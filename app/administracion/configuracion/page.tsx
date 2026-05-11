@@ -1,31 +1,77 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+
+type ConfiguracionPayload = {
+	idioma: 'es' | 'en';
+	zonaHoraria: string;
+	formatoFecha: 'dd/mm/yyyy' | 'mm/dd/yyyy';
+	nombreSistema: string;
+	colorPrimario: string;
+	logo: string;
+};
 
 export default function Configuracion() {
-	const [parametros, setParametros] = useState({
+	const [config, setConfig] = useState<ConfiguracionPayload>({
 		idioma: 'es',
-		zonaHoraria: 'UTC-5',
+		zonaHoraria: 'UTC-4',
 		formatoFecha: 'dd/mm/yyyy',
-	});
-	const [personalizacion, setPersonalizacion] = useState({
-		nombreSistema: 'Sistema de Gestión de Documentos',
+		nombreSistema: 'Sistema de Gestion de Cedulas',
 		colorPrimario: '#1D4ED8',
-		logo: null,
+		logo: '',
 	});
 	const [error, setError] = useState('');
 	const [success, setSuccess] = useState('');
+	const [isLoading, setIsLoading] = useState(true);
+	const [isSaving, setIsSaving] = useState(false);
 
-	const handleParametrosSubmit = (e) => {
-		e.preventDefault();
-		setSuccess('Parámetros del sistema actualizados correctamente.');
-		setError('');
+	const fetchConfiguracion = async () => {
+		try {
+			setIsLoading(true);
+			const res = await fetch('/api/configuracion');
+			if (!res.ok) {
+				const data = await res.json();
+				throw new Error(data.error || 'Error al cargar la configuración');
+			}
+
+			const data = await res.json();
+			setConfig((prev) => ({ ...prev, ...data }));
+			setError('');
+		} catch (err: any) {
+			setError(err.message);
+		} finally {
+			setIsLoading(false);
+		}
 	};
 
-	const handlePersonalizacionSubmit = (e) => {
+	useEffect(() => {
+		fetchConfiguracion();
+	}, []);
+
+	const handleSave = async (e) => {
 		e.preventDefault();
-		setSuccess('Personalización del sistema actualizada correctamente.');
-		setError('');
+
+		try {
+			setIsSaving(true);
+			const res = await fetch('/api/configuracion', {
+				method: 'PUT',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(config),
+			});
+
+			if (!res.ok) {
+				const data = await res.json();
+				throw new Error(data.error || 'No se pudo guardar la configuración');
+			}
+
+			setSuccess('Configuración actualizada correctamente.');
+			setError('');
+		} catch (err: any) {
+			setError(err.message);
+			setSuccess('');
+		} finally {
+			setIsSaving(false);
+		}
 	};
 
 	return (
@@ -34,6 +80,9 @@ export default function Configuracion() {
 				<h1 className='text-3xl font-bold text-gray-800'>Configuración</h1>
 				{error && <p className='text-red-500'>{error}</p>}
 				{success && <p className='text-green-500'>{success}</p>}
+				{isLoading && (
+					<p className='text-gray-600'>Cargando configuración...</p>
+				)}
 
 				{/* Configuración de Parámetros del Sistema */}
 				<section>
@@ -41,15 +90,18 @@ export default function Configuracion() {
 						Configuración de Parámetros del Sistema
 					</h2>
 					<form
-						onSubmit={handleParametrosSubmit}
+						onSubmit={handleSave}
 						className='space-y-4'
 					>
 						<div>
 							<label className='block text-gray-700'>Idioma</label>
 							<select
-								value={parametros.idioma}
+								value={config.idioma}
 								onChange={(e) =>
-									setParametros({ ...parametros, idioma: e.target.value })
+									setConfig({
+										...config,
+										idioma: e.target.value as 'es' | 'en',
+									})
 								}
 								className='border p-2 w-full'
 							>
@@ -60,23 +112,26 @@ export default function Configuracion() {
 						<div>
 							<label className='block text-gray-700'>Zona Horaria</label>
 							<select
-								value={parametros.zonaHoraria}
+								value={config.zonaHoraria}
 								onChange={(e) =>
-									setParametros({ ...parametros, zonaHoraria: e.target.value })
+									setConfig({ ...config, zonaHoraria: e.target.value })
 								}
 								className='border p-2 w-full'
 							>
-								<option value='UTC-5'>UTC-5</option>
 								<option value='UTC-4'>UTC-4</option>
+								<option value='UTC-5'>UTC-5</option>
 								<option value='UTC+0'>UTC+0</option>
 							</select>
 						</div>
 						<div>
 							<label className='block text-gray-700'>Formato de Fecha</label>
 							<select
-								value={parametros.formatoFecha}
+								value={config.formatoFecha}
 								onChange={(e) =>
-									setParametros({ ...parametros, formatoFecha: e.target.value })
+									setConfig({
+										...config,
+										formatoFecha: e.target.value as 'dd/mm/yyyy' | 'mm/dd/yyyy',
+									})
 								}
 								className='border p-2 w-full'
 							>
@@ -84,34 +139,13 @@ export default function Configuracion() {
 								<option value='mm/dd/yyyy'>mm/dd/yyyy</option>
 							</select>
 						</div>
-						<button
-							type='submit'
-							className='bg-blue-500 text-white px-4 py-2'
-						>
-							Guardar Cambios
-						</button>
-					</form>
-				</section>
-
-				{/* Personalización del Sistema */}
-				<section>
-					<h2 className='text-2xl font-semibold text-gray-800 mb-4'>
-						Personalización del Sistema
-					</h2>
-					<form
-						onSubmit={handlePersonalizacionSubmit}
-						className='space-y-4'
-					>
 						<div>
 							<label className='block text-gray-700'>Nombre del Sistema</label>
 							<input
 								type='text'
-								value={personalizacion.nombreSistema}
+								value={config.nombreSistema}
 								onChange={(e) =>
-									setPersonalizacion({
-										...personalizacion,
-										nombreSistema: e.target.value,
-									})
+									setConfig({ ...config, nombreSistema: e.target.value })
 								}
 								className='border p-2 w-full'
 							/>
@@ -120,34 +154,29 @@ export default function Configuracion() {
 							<label className='block text-gray-700'>Color Primario</label>
 							<input
 								type='color'
-								value={personalizacion.colorPrimario}
+								value={config.colorPrimario}
 								onChange={(e) =>
-									setPersonalizacion({
-										...personalizacion,
-										colorPrimario: e.target.value,
-									})
+									setConfig({ ...config, colorPrimario: e.target.value })
 								}
 								className='border p-2 w-full'
 							/>
 						</div>
 						<div>
-							<label className='block text-gray-700'>Logotipo</label>
+							<label className='block text-gray-700'>URL del Logotipo</label>
 							<input
-								type='file'
-								onChange={(e) =>
-									setPersonalizacion({
-										...personalizacion,
-										logo: e.target.files[0],
-									})
-								}
+								type='url'
+								placeholder='https://...'
+								value={config.logo}
+								onChange={(e) => setConfig({ ...config, logo: e.target.value })}
 								className='border p-2 w-full'
 							/>
 						</div>
 						<button
 							type='submit'
-							className='bg-blue-500 text-white px-4 py-2'
+							disabled={isSaving || isLoading}
+							className='bg-blue-500 text-white px-4 py-2 disabled:opacity-60'
 						>
-							Guardar Cambios
+							{isSaving ? 'Guardando...' : 'Guardar Cambios'}
 						</button>
 					</form>
 				</section>

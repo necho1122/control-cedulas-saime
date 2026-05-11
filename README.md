@@ -7,20 +7,20 @@ Este proyecto es una aplicación interna desarrollada para el **SAIME de Venezue
 - **Gestión de Documentos**: Registro, búsqueda y organización de documentos por nombre o cédula.
 - **Gestión de Usuarios**: Administración de roles y usuarios del sistema.
 - **Interfaz Intuitiva**: Navegación sencilla con un diseño responsivo.
-- **Seguridad**: Manejo de datos sensibles con variables de entorno y buenas prácticas.
+- **Seguridad**: Autenticación con NextAuth, control por rol y hash de contraseñas.
 
 ## Tecnologías Utilizadas
 
 - **Frontend**: [Next.js](https://nextjs.org/) con React.
-- **Backend**: API construida con Next.js y Prisma.
-- **Base de Datos**: MySQL.
+- **Backend**: API construida con Route Handlers de Next.js App Router.
+- **Base de Datos**: Firebase Firestore.
+- **Autenticación**: NextAuth (CredentialsProvider).
 - **Despliegue**: [Vercel](https://vercel.com/).
 
 ## Requisitos Previos
 
 - Node.js (v16 o superior)
-- MySQL (servidor accesible)
-- [Prisma CLI](https://www.prisma.io/docs/getting-started/quickstart)
+- Proyecto Firebase con Firestore habilitado
 
 ## Configuración del Proyecto
 
@@ -38,22 +38,26 @@ Este proyecto es una aplicación interna desarrollada para el **SAIME de Venezue
    ```
 
 3. **Configurar variables de entorno**:
+   - Crea un archivo `.env.local` en la raíz del proyecto con el siguiente contenido:
+     ```
+     NEXT_PUBLIC_FIREBASE_API_KEY=...
+     NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=...
+     NEXT_PUBLIC_FIREBASE_PROJECT_ID=...
+     NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=...
+     NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
+     NEXT_PUBLIC_FIREBASE_APP_ID=...
+     NEXTAUTH_SECRET=...
+     NEXTAUTH_URL=http://localhost:3000
+     FIREBASE_PROJECT_ID=...
+     FIREBASE_CLIENT_EMAIL=...
+     FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\\n...\\n-----END PRIVATE KEY-----\\n"
+     ```
 
-   - Crea un archivo `.env` en la raíz del proyecto con el siguiente contenido:
-     ```
-     DATABASE_URL=mysql://usuario:contraseña@host:puerto/nombre_base_datos
-     ```
-
-4. **Configurar Prisma**:
-
-   - Generar el cliente Prisma:
-     ```bash
-     npx prisma generate
-     ```
-   - Aplicar migraciones (si es necesario):
-     ```bash
-     npx prisma migrate deploy
-     ```
+4. **Crear el primer administrador**:
+   - Inicia el proyecto con `npm run dev`.
+   - Abre `http://localhost:3000/setup`.
+   - Crea el primer usuario Admin.
+   - Inicia sesión en `http://localhost:3000/login`.
 
 5. **Iniciar el servidor de desarrollo**:
 
@@ -67,15 +71,23 @@ Este proyecto es una aplicación interna desarrollada para el **SAIME de Venezue
 ## Despliegue en Vercel
 
 1. **Conectar el repositorio**:
-
    - Sube el proyecto a un repositorio en GitHub, GitLab o Bitbucket.
    - Conecta el repositorio a Vercel.
 
 2. **Configurar variables de entorno**:
-
    - En el panel de Vercel, ve a **Settings > Environment Variables** y agrega:
      ```
-     DATABASE_URL=mysql://usuario:contraseña@host:puerto/nombre_base_datos
+     NEXT_PUBLIC_FIREBASE_API_KEY=...
+     NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=...
+     NEXT_PUBLIC_FIREBASE_PROJECT_ID=...
+     NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=...
+     NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
+     NEXT_PUBLIC_FIREBASE_APP_ID=...
+     NEXTAUTH_SECRET=...
+     NEXTAUTH_URL=https://tu-dominio.vercel.app
+     FIREBASE_PROJECT_ID=...
+     FIREBASE_CLIENT_EMAIL=...
+     FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\\n...\\n-----END PRIVATE KEY-----\\n"
      ```
 
 3. **Hacer el deploy**:
@@ -86,14 +98,15 @@ Este proyecto es una aplicación interna desarrollada para el **SAIME de Venezue
 ```
 ├── app/
 │   ├── api/               # Endpoints de la API
+│   ├── login/             # Acceso de usuarios
+│   ├── setup/             # Bootstrap del primer admin
 │   ├── organizacion/      # Página de organización
 │   ├── administracion/    # Página de administración
 │   └── layout.tsx         # Layout principal
-├── prisma/
-│   ├── schema.prisma      # Esquema de la base de datos
-├── public/
-│   ├── saime-seeklogo.png # Logo del proyecto
-├── .env                   # Variables de entorno (no incluido en el repositorio)
+├── lib/
+│   ├── auth.ts            # Configuración de NextAuth
+├── middleware.ts          # Protección de rutas administrativas
+├── .env.local             # Variables de entorno (no incluido en el repositorio)
 ├── .gitignore             # Archivos ignorados por Git
 ├── README.md              # Documentación del proyecto
 ```

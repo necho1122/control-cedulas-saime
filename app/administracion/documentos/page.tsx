@@ -3,8 +3,16 @@
 import { useEffect, useState } from 'react';
 import Contadores from './Contadores';
 
+type Documento = {
+	id: string;
+	nombre: string;
+	cedula: string;
+	estado: 'Disponible' | 'Entregado' | 'Desincorporado';
+	tipoTramite: 'Original' | 'Renovación';
+};
+
 export default function Documentos() {
-	const [documentos, setDocumentos] = useState([]);
+	const [documentos, setDocumentos] = useState<Documento[]>([]);
 	const [error, setError] = useState('');
 	const [success, setSuccess] = useState(''); // Mensaje de éxito
 	const [selectedEstados, setSelectedEstados] = useState<
@@ -13,21 +21,21 @@ export default function Documentos() {
 
 	const fetchDocumentos = async () => {
 		try {
-			const res = await fetch('/api/documentos');
+			const res = await fetch('/api/documentos?pageSize=200');
 			if (!res.ok) throw new Error('Error al obtener documentos');
 			const data = await res.json();
 			setDocumentos(data);
 			// Inicializar estados seleccionados
 			const estadosIniciales = data.reduce(
-				(acc: Record<string, string>, doc: any) => {
+				(acc: Record<string, string>, doc: Documento) => {
 					acc[doc.id] = doc.estado;
 					return acc;
 				},
-				{}
+				{},
 			);
 			setSelectedEstados(estadosIniciales);
-		} catch (err: any) {
-			setError(err.message);
+		} catch (err: unknown) {
+			setError(err instanceof Error ? err.message : 'Error inesperado');
 			setTimeout(() => setError(''), 5000); // Ocultar mensaje después de 5 segundos
 		}
 	};
@@ -45,8 +53,8 @@ export default function Documentos() {
 			setError(''); // Limpiar errores
 			setTimeout(() => setSuccess(''), 5000); // Ocultar mensaje después de 5 segundos
 			fetchDocumentos(); // Refrescar la lista
-		} catch (err: any) {
-			setError(err.message);
+		} catch (err: unknown) {
+			setError(err instanceof Error ? err.message : 'Error inesperado');
 			setSuccess(''); // Limpiar mensaje de éxito
 			setTimeout(() => setError(''), 5000); // Ocultar mensaje después de 5 segundos
 		}
@@ -65,8 +73,8 @@ export default function Documentos() {
 			setError(''); // Limpiar errores
 			setTimeout(() => setSuccess(''), 5000); // Ocultar mensaje después de 5 segundos
 			fetchDocumentos(); // Refrescar la lista
-		} catch (err: any) {
-			setError(err.message);
+		} catch (err: unknown) {
+			setError(err instanceof Error ? err.message : 'Error inesperado');
 			setSuccess(''); // Limpiar mensaje de éxito
 			setTimeout(() => setError(''), 5000); // Ocultar mensaje después de 5 segundos
 		}
@@ -81,7 +89,7 @@ export default function Documentos() {
 			<h1 className='text-3xl font-bold mb-4'>Gestión de Documentos</h1>
 
 			{/* Contadores */}
-			<Contadores />
+			<Contadores documentos={documentos} />
 
 			{/* Notificaciones flotantes */}
 			{success && (
@@ -105,7 +113,7 @@ export default function Documentos() {
 					</tr>
 				</thead>
 				<tbody>
-					{documentos.map((doc: any) => (
+					{documentos.map((doc) => (
 						<tr key={doc.id}>
 							<td className='border border-gray-300 px-4 py-2'>{doc.nombre}</td>
 							<td className='border border-gray-300 px-4 py-2'>{doc.cedula}</td>

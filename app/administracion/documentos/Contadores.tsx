@@ -1,26 +1,16 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+type Documento = {
+	id: string;
+	tipoTramite: 'Original' | 'Renovación';
+	estado: 'Disponible' | 'Entregado' | 'Desincorporado';
+};
 
-export default function Contadores() {
-	const [documentos, setDocumentos] = useState([]);
-	const [error, setError] = useState('');
-
-	const fetchDocumentos = async () => {
-		try {
-			const res = await fetch('/api/documentos');
-			if (!res.ok) throw new Error('Error al obtener documentos');
-			const data = await res.json();
-			setDocumentos(data);
-		} catch (err: any) {
-			setError(err.message);
-		}
-	};
-
-	useEffect(() => {
-		fetchDocumentos();
-	}, []);
-
+export default function Contadores({
+	documentos,
+}: {
+	documentos: Documento[];
+}) {
 	// Contar documentos por tipo de trámite
 	const contarPorTipoTramite = (tipo: string) =>
 		documentos.filter((doc: any) => doc.tipoTramite === tipo).length;
@@ -32,7 +22,6 @@ export default function Contadores() {
 	return (
 		<div className='p-4 bg-gray-100 rounded shadow'>
 			<h2 className='text-xl font-bold mb-4'>Resumen de Documentos</h2>
-			{error && <p className='text-red-500'>{error}</p>}
 			<div className='grid grid-cols-2 gap-4'>
 				{/* Contadores por tipo de trámite */}
 				<div className='bg-white p-4 rounded shadow'>

@@ -2,15 +2,30 @@
 
 import { useEffect, useState } from 'react';
 
+type Usuario = {
+	id: string;
+	email: string;
+	rol: 'Admin' | 'Usuario';
+};
+
+type UsuarioForm = {
+	id: string | null;
+	email: string;
+	password: string;
+	rol: '' | 'Admin' | 'Usuario';
+};
+
 export default function Usuarios() {
-	const [usuarios, setUsuarios] = useState([]);
-	const [form, setForm] = useState({
+	const [usuarios, setUsuarios] = useState<Usuario[]>([]);
+	const [form, setForm] = useState<UsuarioForm>({
 		id: null,
 		email: '',
 		password: '',
 		rol: '',
 	});
 	const [error, setError] = useState('');
+	const [success, setSuccess] = useState('');
+	const [isSubmitting, setIsSubmitting] = useState(false);
 
 	const fetchUsuarios = async () => {
 		try {
@@ -18,6 +33,7 @@ export default function Usuarios() {
 			if (!res.ok) throw new Error('Error al obtener usuarios');
 			const data = await res.json();
 			setUsuarios(data);
+			setError('');
 		} catch (err: any) {
 			setError(err.message);
 		}
@@ -26,33 +42,52 @@ export default function Usuarios() {
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		setError('');
+		setSuccess('');
 
 		try {
+			setIsSubmitting(true);
 			const method = form.id ? 'PATCH' : 'POST';
+			const payload: Record<string, string | null> = {
+				id: form.id,
+				email: form.email,
+				rol: form.rol,
+			};
+
+			if (!form.id || form.password.trim()) {
+				payload.password = form.password;
+			}
+
 			const res = await fetch('/api/usuarios', {
 				method,
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(form),
+				body: JSON.stringify(payload),
 			});
 
-			if (!res.ok) throw new Error('Error al guardar los datos');
+			if (!res.ok) {
+				const payload = await res.json();
+				throw new Error(payload.error || 'Error al guardar los datos');
+			}
 			setForm({ id: null, email: '', password: '', rol: '' });
+			setSuccess(form.id ? 'Usuario actualizado.' : 'Usuario creado.');
 			fetchUsuarios();
 		} catch (err: any) {
 			setError(err.message);
+		} finally {
+			setIsSubmitting(false);
 		}
 	};
 
-	const handleEdit = (item) => {
-		setForm(item);
+	const handleEdit = (item: Usuario) => {
+		setForm({ ...item, password: '' });
 	};
 
-	const handleDelete = async (id) => {
+	const handleDelete = async (id: string) => {
 		if (!confirm('¿Estás seguro de que deseas eliminar este usuario?')) return;
 
 		try {
 			const res = await fetch(`/api/usuarios?id=${id}`, { method: 'DELETE' });
 			if (!res.ok) throw new Error('Error al eliminar el usuario');
+			setSuccess('Usuario eliminado.');
 			fetchUsuarios();
 		} catch (err: any) {
 			setError(err.message);
@@ -70,6 +105,7 @@ export default function Usuarios() {
 					Gestión de Usuarios
 				</h1>
 				{error && <p className='text-red-500 mb-4'>{error}</p>}
+				{success && <p className='text-green-600 mb-4'>{success}</p>}
 				<form
 					onSubmit={handleSubmit}
 					className='mb-8 space-y-4'
@@ -83,14 +119,20 @@ export default function Usuarios() {
 					/>
 					<input
 						type='password'
-						placeholder='Contraseña'
+						placeholder={form.id ? 'Nueva contraseña (opcional)' : 'Contraseña'}
 						value={form.password}
 						onChange={(e) => setForm({ ...form, password: e.target.value })}
 						className='border p-2 w-full'
+						required={!form.id}
 					/>
 					<select
 						value={form.rol}
-						onChange={(e) => setForm({ ...form, rol: e.target.value })}
+						onChange={(e) =>
+							setForm({
+								...form,
+								rol: e.target.value as '' | 'Admin' | 'Usuario',
+							})
+						}
 						className='border p-2 w-full'
 					>
 						<option value=''>Seleccionar rol</option>
@@ -99,9 +141,10 @@ export default function Usuarios() {
 					</select>
 					<button
 						type='submit'
-						className='bg-blue-500 text-white px-4 py-2'
+						disabled={isSubmitting}
+						className='bg-blue-500 text-white px-4 py-2 disabled:opacity-60'
 					>
-						{form.id ? 'Actualizar' : 'Agregar'}
+						{isSubmitting ? 'Guardando...' : form.id ? 'Actualizar' : 'Agregar'}
 					</button>
 				</form>
 				<table className='table-auto w-full border-collapse border border-gray-300'>
@@ -119,7 +162,7 @@ export default function Usuarios() {
 						</tr>
 					</thead>
 					<tbody>
-						{usuarios.map((usuario) => (
+						{usuarios.map((usuario: Usuario) => (
 							<tr key={usuario.id}>
 								<td className='border border-gray-300 px-4 py-2'>
 									{usuario.email}
