@@ -1,18 +1,41 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
-import { signIn } from 'next-auth/react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { signIn, useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function LoginPage() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
-	const callbackUrl = searchParams.get('callbackUrl') || '/';
+	const { status } = useSession();
+
+	const callbackUrl = useMemo(() => {
+		const raw = searchParams.get('callbackUrl') || '/';
+		if (!raw.startsWith('/') || raw === '/login') {
+			return '/';
+		}
+		return raw;
+	}, [searchParams]);
 
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
 	const [error, setError] = useState('');
 	const [isLoading, setIsLoading] = useState(false);
+
+	useEffect(() => {
+		if (status === 'authenticated') {
+			router.replace(callbackUrl);
+			router.refresh();
+		}
+	}, [status, router, callbackUrl]);
+
+	if (status === 'loading' || status === 'authenticated') {
+		return (
+			<div className='min-h-screen bg-gray-100 flex items-center justify-center p-6'>
+				<p className='text-sm text-gray-600'>Redirigiendo...</p>
+			</div>
+		);
+	}
 
 	const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault();

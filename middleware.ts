@@ -5,7 +5,20 @@ import { getToken } from 'next-auth/jwt';
 const protectedPrefixes = ['/registro', '/organizacion', '/administracion'];
 
 export async function middleware(request: NextRequest) {
-	const { pathname } = request.nextUrl;
+	const { pathname, searchParams } = request.nextUrl;
+	const token = await getToken({ req: request });
+
+	if (pathname === '/login' && token) {
+		const callbackParam = searchParams.get('callbackUrl');
+		const targetPath =
+			callbackParam &&
+			callbackParam.startsWith('/') &&
+			callbackParam !== '/login'
+				? callbackParam
+				: '/';
+
+		return NextResponse.redirect(new URL(targetPath, request.url));
+	}
 
 	const isProtectedRoute =
 		pathname === '/' ||
@@ -14,8 +27,6 @@ export async function middleware(request: NextRequest) {
 	if (!isProtectedRoute) {
 		return NextResponse.next();
 	}
-
-	const token = await getToken({ req: request });
 
 	if (isProtectedRoute) {
 		if (!token) {
