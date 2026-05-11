@@ -3,10 +3,11 @@ import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 
 const protectedPrefixes = ['/registro', '/organizacion', '/administracion'];
+const AUTH_SECRET = process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET;
 
 export async function middleware(request: NextRequest) {
 	const { pathname, searchParams } = request.nextUrl;
-	const token = await getToken({ req: request });
+	const token = await getToken({ req: request, secret: AUTH_SECRET });
 
 	if (pathname === '/login' && token) {
 		const callbackParam = searchParams.get('callbackUrl');

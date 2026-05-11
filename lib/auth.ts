@@ -2,6 +2,7 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import type { NextAuthOptions } from 'next-auth';
 
 const ALLOWED_ROLES = new Set(['Admin', 'Usuario']);
+const AUTH_SECRET = process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET;
 
 type FirebaseAuthSignInResponse = {
 	localId: string;
@@ -75,6 +76,7 @@ async function signInWithFirebaseAuth(
 }
 
 export const authOptions: NextAuthOptions = {
+	secret: AUTH_SECRET,
 	session: {
 		strategy: 'jwt',
 	},
