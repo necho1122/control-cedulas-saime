@@ -58,3 +58,4 @@ google-credentials*.json
 # Ignore public sensitive files
 public/saime-seeklogo.png
 .vercel
+.env*.local
